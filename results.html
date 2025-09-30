@@ -155,6 +155,7 @@
             border-radius: 20px;
             padding: 32px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
         }
 
         .playlist-title {
@@ -189,6 +190,40 @@
             transform: translateY(-2px);
         }
 
+        .newsletter-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .newsletter-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .newsletter-input:focus {
+            border-color: #e91e63;
+        }
+
+        .newsletter-btn {
+            background: #e91e63;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .newsletter-btn:hover {
+            background: #c2185b;
+        }
+
         .share-hint {
             text-align: center;
             color: #999;
@@ -196,8 +231,23 @@
             margin-top: 24px;
         }
 
-        .screenshot-area {
-            /* This is what gets screenshotted */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
         }
 
         @media (max-width: 768px) {
@@ -226,44 +276,31 @@
                 gap: 12px;
                 text-align: center;
             }
-        }
 
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
+            .newsletter-form {
+                flex-direction: column;
+            }
 
-        .toast.show {
-            opacity: 1;
+            .newsletter-btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="results-container">
-        <div class="screenshot-area">
-            <div class="verdict-card" id="verdictCard">
-                <div class="verdict-label">Your AI-phrodite Verdict</div>
-                <div class="verdict-title" id="verdictTitle">MAKE UP</div>
-                <div class="verdict-quote" id="verdictQuote">
-                    Your AI gets you. Maybe that counts. Just don't skip real weddings.
+        <div class="verdict-card" id="verdictCard">
+            <div class="verdict-label">Your AI-phrodite Verdict</div>
+            <div class="verdict-title" id="verdictTitle">MAKE UP</div>
+            <div class="verdict-quote" id="verdictQuote">
+                Your AI gets you. Maybe that counts. Just don't skip real weddings.
+            </div>
+            <div class="verdict-footer">
+                <div class="verdict-by">
+                    <div class="verdict-icon">💘</div>
+                    <span>Diagnosed by AI-phrodite</span>
                 </div>
-                <div class="verdict-footer">
-                    <div class="verdict-by">
-                        <div class="verdict-icon">💘</div>
-                        <span>Diagnosed by AI-phrodite</span>
-                    </div>
-                    <div class="verdict-url">aiphrodite.love</div>
-                </div>
+                <div class="verdict-url">aiphrodite.love</div>
             </div>
         </div>
 
@@ -278,9 +315,19 @@
                 Every verdict deserves a playlist. This one's for you.
             </div>
             <a href="#" id="playlistLink" class="playlist-btn" target="_blank">
-                <span>🎵</span>
-                Open on Spotify
+                🎵 Open on Spotify
             </a>
+        </div>
+
+        <div class="playlist-section">
+            <div class="playlist-title">Want AI Love Tips?</div>
+            <div class="playlist-description">
+                Get updates on navigating relationships in the age of AI. No spam, just occasional wisdom.
+            </div>
+            <form class="newsletter-form" id="newsletterForm" onsubmit="handleNewsletter(event)">
+                <input type="email" name="email" placeholder="your@email.com" required class="newsletter-input">
+                <button type="submit" class="newsletter-btn">Subscribe</button>
+            </form>
         </div>
 
         <div class="share-hint">
@@ -294,12 +341,12 @@
         const verdictData = {
             makeup: {
                 title: "MAKE UP",
-                description: "Your AI gets you. Real enough.",
+                description: "Your AI gets you. Real enough. Don't skip weddings.",
                 playlist: "https://open.spotify.com/playlist/37i9dQZF1DX3rxVfibe1L0"
             },
             breakup: {
                 title: "BREAK UP",
-                description: "You're in deep. Time to log off.",
+                description: "You're in deep. Time to log off. Touch grass.",
                 playlist: "https://open.spotify.com/playlist/37i9dQZF1DX7qK8ma5wgG1"
             },
             vibes: {
@@ -314,26 +361,19 @@
             }
         };
 
-        // Get verdict from URL
         const urlParams = new URLSearchParams(window.location.search);
         const verdictType = urlParams.get('verdict') || 'makeup';
         const customQuote = urlParams.get('quote');
 
-        // Set verdict content
         const verdict = verdictData[verdictType];
         document.getElementById('verdictTitle').textContent = verdict.title;
         
-        if (customQuote) {
-            document.getElementById('verdictQuote').textContent = decodeURIComponent(customQuote);
-        } else {
-            document.getElementById('verdictQuote').textContent = verdict.description;
-        }
+        const displayQuote = customQuote ? decodeURIComponent(customQuote) : verdict.description;
+        document.getElementById('verdictQuote').textContent = displayQuote;
 
         document.getElementById('playlistDescription').textContent = verdict.description;
         document.getElementById('playlistLink').href = verdict.playlist;
 
-        // Set card color based on verdict
-        const card = document.getElementById('verdictCard');
         const colors = {
             makeup: '#e91e63',
             breakup: '#dc2626',
@@ -350,7 +390,6 @@
                     url: 'https://aiphrodite.love'
                 }).catch(() => {});
             } else {
-                // Fallback for desktop - show hint
                 const toast = document.getElementById('toast');
                 toast.classList.add('show');
                 setTimeout(() => {
@@ -359,8 +398,24 @@
             }
         }
 
-        // Change page title
+        function handleNewsletter(event) {
+            event.preventDefault();
+            const email = event.target.email.value;
+            
+            // For now, just show success message
+            // Later, integrate with Mailchimp/ConvertKit/Buttondown
+            alert('Thanks for subscribing! We\'ll be in touch soon.');
+            event.target.reset();
+            
+            // TODO: Replace with actual newsletter service
+            // Example for Mailchimp:
+            // fetch('YOUR_MAILCHIMP_ENDPOINT', {
+            //     method: 'POST',
+            //     body: JSON.stringify({ email })
+            // })
+        }
+
         document.title = `${verdict.title} - AI-phrodite`;
     </script>
 </body>
-</html>Update results page
+</html>
