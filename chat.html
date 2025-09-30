@@ -534,4 +534,107 @@ BE SHARP. BE SPECIFIC. USE THEIR WORDS BACK AT THEM.`;
                 const data = await response.json();
                 const aiResponse = data.choices[0].message.content;
 
-                conversationHistory.push({ role: "assistant", content
+                conversationHistory.push({ role: "assistant", content: aiResponse });
+                return aiResponse;
+
+            } catch (error) {
+                console.error('Error:', error);
+                return "Connection issues. Try again.";
+            }
+        }
+
+        function extractVerdictType(text) {
+            const upper = text.toUpperCase();
+            if (upper.includes('BREAK UP')) return 'breakup';
+            if (upper.includes('JUST VIBES')) return 'vibes';
+            if (upper.includes('COMPLICATED')) return 'complicated';
+            return 'makeup';
+        }
+
+        function redirectToResults(verdictText) {
+            const verdictType = extractVerdictType(verdictText);
+            const resultsURL = `results.html?verdict=${verdictType}&quote=${encodeURIComponent(verdictText)}`;
+            window.location.href = resultsURL;
+        }
+
+        async function autoGetVerdict() {
+            showAnalyzing();
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            removeAnalyzing();
+
+            showTyping();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            const verdictText = await getAIResponse('', true);
+            hideTyping();
+            
+            redirectToResults(verdictText);
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const text = messageInput.value.trim();
+            
+            if (!text || hasDeliveredVerdict) return;
+
+            sendButton.disabled = true;
+            messageInput.disabled = true;
+
+            addMessage(text, true);
+            messageInput.value = '';
+            adjustTextareaHeight();
+
+            showTyping();
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 900));
+                
+                const aiResponse = await getAIResponse(text);
+                hideTyping();
+                
+                setTimeout(async () => {
+                    addMessage(aiResponse, false);
+                    
+                    if (questionCount === 6 && !hasDeliveredVerdict) {
+                        sendButton.disabled = true;
+                        messageInput.disabled = true;
+                        messageInput.placeholder = "Analyzing...";
+                        
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await autoGetVerdict();
+                    }
+                }, 400);
+
+            } catch (error) {
+                hideTyping();
+                removeAnalyzing();
+                addMessage("Connection issues. Try again.", false);
+            } finally {
+                if (!hasDeliveredVerdict && questionCount < 6) {
+                    sendButton.disabled = false;
+                    messageInput.disabled = false;
+                    messageInput.focus();
+                }
+            }
+        }
+
+        function adjustTextareaHeight() {
+            const textarea = document.getElementById('messageInput');
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.getElementById('messageInput').addEventListener('input', adjustTextareaHeight);
+    </script>
+</body>
+</html>
