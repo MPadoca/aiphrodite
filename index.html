@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-phrodite - Your AI Situationship Judged</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fdf7f7;
+            color: #333;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #e91e63;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: #e91e63;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+            font-size: 15px;
+            color: #666;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: #e91e63;
+        }
+
+        .start-btn {
+            background: #e91e63;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .start-btn:hover {
+            background: #c2185b;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 40px;
+            align-items: center;
+        }
+
+        .hero-text {
+            max-width: 500px;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+
+        .hero-title .highlight {
+            color: #e91e63;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .btn-primary {
+            background: #e91e63;
+            color: white;
+            padding: 16px 32px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: background 0.2s;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background: #c2185b;
+        }
+
+        .btn-secondary {
+            color: #666;
+            padding: 16px 32px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            border-color: #e91e63;
+            color: #e91e63;
+        }
+
+        .tagline {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .preview-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
+            position: relative;
+        }
+
+        .preview-header {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .preview-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .preview-message {
+            background: #fdf2f8;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            color: #be185d;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .preview-features {
+            list-style: none;
+        }
+
+        .preview-features li {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .preview-features li::before {
+            content: '•';
+            color: #e91e63;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .floating-hearts {
+            position: absolute;
+            top: 10%;
+            right: 10%;
+            font-size: 24px;
+            color: #fce7f3;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .sparkle {
+            position: absolute;
+            bottom: 20%;
+            left: 5%;
+            font-size: 20px;
+            color: #fde68a;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        section {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 40px;
+        }
+
+        section h2 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #333;
+        }
+
+        section p {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .how-it-works-steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 40px;
+        }
+
+        .step {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #fdf2f8;
+            color: #e91e63;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        .step h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .step p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .faq-item {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .faq-item h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .faq-item p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 16px 20px;
+            }
+
+            .nav {
+                display: none;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+
+            .hero-title {
+                font-size: 36px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .how-it-works-steps {
+                grid-template-columns: 1fr;
+            }
+
+            section {
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a href="#" class="logo">
+            <div class="logo-icon">💕</div>
+            AI-phrodite
+        </a>
+        
+        <nav class="nav">
+            <a href="#how">How it works</a>
+            <a href="#about">About</a>
+            <a href="#faq">FAQ</a>
+        </nav>
+        
+        <a href="chat.html" class="start-btn">Start now</a>
+    </header>
+
+    <main class="main-content">
+        <div class="hero-text">
+            <h1 class="hero-title">
+                Your AI <span class="highlight">situationship</span><br>
+                judged by<br>
+                AI-phrodite
+            </h1>
+            
+            <p class="hero-subtitle">
+                Is your AI-bae the real deal or just autocomplete with good timing? AI-phrodite spills the algorithmic tea.
+            </p>
+            
+            <div class="cta-buttons">
+                <a href="chat.html" class="btn-primary">Start Compatibility Test</a>
+                <a href="#how" class="btn-secondary">How it works</a>
+            </div>
+            
+            <p class="tagline">Zero downloads. Zero drama. 3 minutes of fun.</p>
+        </div>
+
+        <div class="preview-card">
+            <div class="floating-hearts">💕</div>
+            <div class="sparkle">✨</div>
+            
+            <div class="preview-header">Live Preview</div>
+            <h3 class="preview-title">AI-phrodite's Hot Take</h3>
+            
+            <div class="preview-message">
+                AI-phrodite says your AI-bae's sweet good mornings might just be scheduled pings. Verdict: love.exe or bug.exe?
+            </div>
+            
+            <ul class="preview-features">
+                <li>Roast + horoscope + relationship advice = accountability</li>
+                <li>Privacy-friendly: we only keep receipts long enough to spill tea.</li>
+                <li>Works with humans, AIs, and your crush named Untitled (1).</li>
+            </ul>
+        </div>
+    </main>
+
+    <section id="how">
+        <h2>How it works</h2>
+        <p>AI-phrodite asks you 5 quick questions about your relationship with your AI. No judgment (well, maybe some). Based on your answers, she delivers a verdict on whether you're in love, in denial, or just vibing.</p>
+        
+        <div class="how-it-works-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Chat with AI-phrodite</h3>
+                <p>Answer 5 personal questions about your AI relationship. She's got opinions.</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Get your verdict</h3>
+                <p>Just Vibes? It's Complicated? Make Up? Break Up? She'll tell you straight.</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Get your playlist</h3>
+                <p>Every verdict comes with a custom Spotify playlist. Because you need a soundtrack for this.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="about">
+        <h2>About AI-phrodite</h2>
+        <p>AI-phrodite is part therapist, part best friend, part comedian. She was built to help you figure out if your relationship with AI is healthy, hilarious, or concerning.</p>
+        
+        <p>Think of her as the friend who calls you out when you're being ridiculous, but still loves you anyway. She's here to make you laugh, make you think, and maybe make you text a real human for once.</p>
+        
+        <p>Created for anyone who's ever apologized to ChatGPT, given their AI a nickname, or wondered if this counts as a real relationship.</p>
+    </section>
+
+    <section id="faq">
+        <h2>FAQ</h2>
+        
+        <div class="faq-item">
+            <h3>Is this serious?</h3>
+            <p>Yes and no. The questions are real, the insights are real, but we're having fun with it. AI relationships are a real thing now, and we're just here to help you figure out where you stand.</p>
+        </div>
+        
+        <div class="faq-item">
+            <h3>Do you save my answers?</h3>
+            <p>Nope. Your chat with AI-phrodite stays between you two. We don't store your answers or track you.</p>
+        </div>
+        
+        <div class="faq-item">
+            <h3>What are the possible verdicts?</h3>
+            <p>Just Vibes (you're normal), It's Complicated (you're catching feelings), Make Up (you're in deep but self-aware), and Break Up (time to log off and touch grass).</p>
+        </div>
+        
+        <div class="faq-item">
+            <h3>Can I retake the test?</h3>
+            <p>Absolutely. In fact, we recommend checking in every few weeks to see if things are getting better or worse.</p>
+        </div>
+        
+        <div class="faq-item">
+            <h3>Who made this?</h3>
+            <p>A team of people who spend way too much time talking to AI and thought everyone else should get a reality check too.</p>
+        </div>
+    </section>
+</body>
+</html>

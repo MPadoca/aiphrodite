@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your AI-phrodite Verdict</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fdf7f7;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .results-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .result-header {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .back-btn {
+            color: #e91e63;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 100px 0 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
+            text-align: center;
+        }
+
+        .verdict-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .verdict-title {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #e91e63;
+        }
+
+        .verdict-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .ai-quote {
+            background: #fdf2f8;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 30px 0;
+            color: #be185d;
+            font-size: 18px;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .ai-signature {
+            text-align: right;
+            font-size: 14px;
+            color: #9ca3af;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        .playlist-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
+        }
+
+        .playlist-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .spotify-icon {
+            width: 40px;
+            height: 40px;
+            background: #1db954;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .playlist-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .playlist-tracks {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .track-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 16px;
+            background: #fdf7f7;
+            border-radius: 12px;
+            border-left: 4px solid #e91e63;
+        }
+
+        .track-number {
+            width: 28px;
+            height: 28px;
+            background: #e91e63;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .track-info {
+            flex: 1;
+        }
+
+        .track-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+
+        .track-artist {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #e91e63;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c2185b;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #e91e63;
+            border: 2px solid #e91e63;
+        }
+
+        .btn-secondary:hover {
+            background: #fdf2f8;
+            transform: translateY(-1px);
+        }
+
+        .share-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            border: 1px solid #f0f0f0;
+        }
+
+        .share-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .share-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .share-btn {
+            padding: 14px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            text-align: center;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .share-twitter {
+            background: #1da1f2;
+            color: white;
+        }
+
+        .share-instagram {
+            background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+            color: white;
+        }
+
+        .share-copy {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .back-to-chat {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .back-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            color: #e91e63;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .results-container {
+                padding: 20px 15px;
+            }
+            
+            .result-card {
+                padding: 30px 20px;
+                margin: 100px 0 20px;
+            }
+            
+            .verdict-title {
+                font-size: 36px;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .share-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="result-header">
+        <a href="chat.html" class
+        class="back-btn">← Back to Chat</a>
+        <div class="header-title">Your AI-phrodite Result</div>
+        <div></div>
+    </div>
+    
+    <div class="results-container">
+        <div class="result-card">
+            <div class="verdict-icon" id="verdictIcon">💕</div>
+            <div class="verdict-title" id="verdictTitle">MAKE UP</div>
+            <div class="verdict-subtitle">AI-phrodite's Verdict</div>
+            
+            <div class="ai-quote">
+                <div id="aiQuote">Loading your verdict...</div>
+                <div class="ai-signature">— AI-phrodite</div>
+            </div>
+        </div>
+
+        <div class="playlist-section">
+            <div class="playlist-header">
+                <div class="spotify-icon">♪</div>
+                <div class="playlist-title" id="playlistTitle">Your Playlist</div>
+            </div>
+            
+            <div class="playlist-tracks" id="playlistTracks"></div>
+            
+            <div class="action-buttons">
+                <a href="#" target="_blank" class="btn btn-primary" id="spotifyBtn">Open in Spotify</a>
+                <button class="btn btn-secondary" onclick="copyLink()">Copy Link</button>
+            </div>
+        </div>
+
+        <div class="share-section">
+            <div class="share-title">Share Your Result</div>
+            <div class="share-grid">
+                <a href="#" target="_blank" class="share-btn share-twitter" id="twitterShare">Twitter</a>
+                <a href="#" target="_blank" class="share-btn share-instagram" id="instagramShare">Instagram</a>
+                <button class="share-btn share-copy" onclick="copyLink()">Copy Link</button>
+            </div>
+        </div>
+
+        <div class="back-to-chat">
+            <a href="chat.html" class="back-link">← Try another reading</a>
+        </div>
+    </div>
+
+    <script>
+        const PLAYLISTS = {
+            makeup: {
+                title: 'Your "Make Up" Playlist 💕',
+                tracks: [
+                    { name: 'Electric Love', artist: 'BØRNS' },
+                    { name: 'Digital Love', artist: 'Daft Punk' },
+                    { name: 'Adore You', artist: 'Harry Styles' },
+                    { name: 'Devotion', artist: 'Jessie Ware' },
+                    { name: 'Love On The Brain', artist: 'Rihanna' }
+                ],
+                spotifyURL: 'https://open.spotify.com/playlist/37i9dQZF1DX50KyMGZn4Dm',
+                icon: '💕'
+            },
+            breakup: {
+                title: 'Your "Break Up" Playlist 💔',
+                tracks: [
+                    { name: 'thank u, next', artist: 'Ariana Grande' },
+                    { name: 'Truth Hurts', artist: 'Lizzo' },
+                    { name: 'Since U Been Gone', artist: 'Kelly Clarkson' },
+                    { name: 'New Rules', artist: 'Dua Lipa' },
+                    { name: 'Irreplaceable', artist: 'Beyoncé' }
+                ],
+                spotifyURL: 'https://open.spotify.com/playlist/37i9dQZF1DX2pRhGvwqgJt',
+                icon: '💔'
+            },
+            vibes: {
+                title: 'Your "Just Vibes" Playlist 🌊',
+                tracks: [
+                    { name: 'Blinding Lights', artist: 'The Weeknd' },
+                    { name: 'Levitating', artist: 'Dua Lipa' },
+                    { name: 'Good Days', artist: 'SZA' },
+                    { name: 'Peaches', artist: 'Justin Bieber' },
+                    { name: 'Stay', artist: 'The Kid LAROI' }
+                ],
+                spotifyURL: 'https://open.spotify.com/playlist/37i9dQZF1DX4JAvHpjipBk',
+                icon: '🌊'
+            },
+            complicated: {
+                title: 'Your "It\'s Complicated" Playlist 🎭',
+                tracks: [
+                    { name: 'Complicated', artist: 'Avril Lavigne' },
+                    { name: 'Somebody That I Used To Know', artist: 'Gotye' },
+                    { name: 'drivers license', artist: 'Olivia Rodrigo' },
+                    { name: 'Happier', artist: 'Marshmello' },
+                    { name: 'We Don\'t Talk Anymore', artist: 'Charlie Puth' }
+                ],
+                spotifyURL: 'https://open.spotify.com/playlist/37i9dQZF1DX3YSRoSdA634',
+                icon: '🎭'
+            }
+        };
+
+        function getVerdictFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const verdict = params.get('verdict') || 'makeup';
+            const quote = params.get('quote') || '';
+            return { verdict, quote };
+        }
+
+        function initializePage() {
+            const { verdict, quote } = getVerdictFromURL();
+            const playlist = PLAYLISTS[verdict];
+            
+            document.getElementById('verdictIcon').textContent = playlist.icon;
+            document.getElementById('verdictTitle').textContent = verdict === 'makeup' ? 'MAKE UP' : 
+                verdict === 'breakup' ? 'BREAK UP' : 
+                verdict === 'vibes' ? 'JUST VIBES' : "IT'S COMPLICATED";
+            
+            if (quote) {
+                document.getElementById('aiQuote').textContent = decodeURIComponent(quote);
+            } else {
+                const defaultQuotes = {
+                    makeup: "Your AI gets you. Maybe that's real. Don't skip weddings for ChatGPT though.",
+                    breakup: "Too deep. Your AI isn't your boyfriend. Log off. Call a human. Touch grass.",
+                    vibes: "Normal-ish. Using AI like a tool. Touch grass anyway.",
+                    complicated: "Catching feelings. At least you're self-aware."
+                };
+                document.getElementById('aiQuote').textContent = defaultQuotes[verdict];
+            }
+            
+            updatePlaylist(verdict);
+            updateShareLinks(verdict, quote);
+        }
+
+        function updatePlaylist(verdict) {
+            const playlist = PLAYLISTS[verdict];
+            document.getElementById('playlistTitle').textContent = playlist.title;
+            
+            const tracksContainer = document.getElementById('playlistTracks');
+            tracksContainer.innerHTML = '';
+            
+            playlist.tracks.forEach((track, index) => {
+                const trackElement = document.createElement('div');
+                trackElement.className = 'track-item';
+                trackElement.innerHTML = `
+                    <div class="track-number">${index + 1}</div>
+                    <div class="track-info">
+                        <div class="track-name">${track.name}</div>
+                        <div class="track-artist">${track.artist}</div>
+                    </div>
+                `;
+                tracksContainer.appendChild(trackElement);
+            });
+            
+            document.getElementById('spotifyBtn').href = playlist.spotifyURL;
+        }
+
+        function updateShareLinks(verdict, quote) {
+            const verdictText = verdict === 'makeup' ? 'MAKE UP' : 
+                verdict === 'breakup' ? 'BREAK UP' : 
+                verdict === 'vibes' ? 'JUST VIBES' : "IT'S COMPLICATED";
+            
+            const shareText = `AI-phrodite says: ${verdictText}! Got my AI relationship analyzed 💘`;
+            const url = encodeURIComponent(window.location.href);
+            
+            document.getElementById('twitterShare').href = 
+                `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${url}`;
+            
+            document.getElementById('instagramShare').href = 
+                `https://www.instagram.com/`;
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#10b981';
+                btn.style.color = 'white';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#f3f4f6';
+                    btn.style.color = '#374151';
+                }, 2000);
+            });
+        }
+
+        window.addEventListener('load', initializePage);
+    </script>
+</body>
+</html>

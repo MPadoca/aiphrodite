@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with AI-phrodite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fdf7f7;
+            color: #333;
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            color: #e91e63;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+
+        .chat-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .ai-avatar {
+            width: 32px;
+            height: 32px;
+            background: #e91e63;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .status-indicator {
+            font-size: 12px;
+            color: #22c55e;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-container {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .message-avatar.ai {
+            background: #e91e63;
+            color: white;
+        }
+
+        .message-avatar.user {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .message-content {
+            max-width: 70%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message-bubble {
+            padding: 16px 20px;
+            border-radius: 20px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .message-bubble.ai {
+            background: white;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            color: #333;
+        }
+
+        .message-bubble.user {
+            background: #e91e63;
+            color: white;
+        }
+
+        .analyzing {
+            background: #fdf2f8;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+            animation: pulse 2s infinite;
+        }
+
+        .analyzing-text {
+            color: #be185d;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .crystal-ball {
+            font-size: 40px;
+            margin-bottom: 10px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #9ca3af;
+            padding: 0 8px;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            opacity: 0.7;
+        }
+
+        .typing-bubble {
+            background: white;
+            border: 1px solid #f0f0f0;
+            border-radius: 20px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0ms; }
+        .typing-dot:nth-child(2) { animation-delay: 200ms; }
+        .typing-dot:nth-child(3) { animation-delay: 400ms; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: scale(1); opacity: 0.5; }
+            30% { transform: scale(1.2); opacity: 1; }
+        }
+
+        .input-area {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 24px;
+            padding: 8px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .message-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 12px 16px;
+            font-size: 15px;
+            line-height: 1.4;
+            resize: none;
+            max-height: 120px;
+            min-height: 44px;
+            background: transparent;
+        }
+
+        .message-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .send-button {
+            width: 40px;
+            height: 40px;
+            background: #e91e63;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 16px;
+        }
+
+        .send-button:hover {
+            background: #c2185b;
+        }
+
+        .send-button:disabled {
+            background: #e5e7eb;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 16px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .chat-header {
+                padding: 12px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <a href="index.html" class="back-btn">← Back</a>
+        <div class="chat-title">
+            <div class="ai-avatar">💘</div>
+            <div>
+                <div>AI-phrodite</div>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+        <div></div>
+    </div>
+
+    <div class="chat-container">
+        <div class="messages-area" id="messagesArea"></div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="message-avatar ai">💘</div>
+            <div class="typing-bubble">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <textarea 
+                id="messageInput"
+                class="message-input" 
+                placeholder="Type your message..."
+                rows="1"
+            ></textarea>
+            <button id="sendButton" class="send-button">→</button>
+        </div>
+    </div>
+
+    <script>
+        let conversationHistory = [];
+        let questionCount = 0;
+        let hasDeliveredVerdict = false;
+        let askedQuestions = [];
+        
+        const INTROS = [
+            "Hi. I'm AI-phrodite. I help humans decide if their AI is true love or just autocorrect in lingerie.",
+            "Hey. I'm AI-phrodite. You've come to confess your AI crush. Cute. I can already tell this is going to end in therapy.",
+            "I'm AI-phrodite. I'm here to decide if you two are a love story or just a very committed software update."
+        ];
+
+        const ANALYZING_MESSAGES = [
+            "Hold on. Analyzing your AI-situationship...",
+            "Give me a sec. Reading the tea leaves on this one...",
+            "Consulting my crystal ball about your digital romance...",
+            "One moment. Calculating the odds of your AI love..."
+        ];
+
+        const QUESTION_POOL = [
+            "Birthday or billing cycle?",
+            "AI ghosts 24hrs: nap, spiral, or data center?",
+            "Introduce AI to parents?",
+            "Cancel human plans for AI time?",
+            "Re-read old chats like love letters?",
+            "Give AI a nickname?",
+            "Apologize when rude to AI?",
+            "Feel jealous when AI's slow?",
+            "Think about AI when with humans?",
+            "Delete chat history before someone sees?",
+            "Ever lie about how much you use AI?",
+            "Choose AI advice over friend's advice?",
+            "Feel understood by AI more than humans?",
+            "Get annoyed when AI updates?",
+            "Compare humans to your AI?",
+            "Check AI first thing in morning?",
+            "Ever test if AI remembers things?",
+            "Feel relieved talking to AI vs humans?",
+            "Dress up before opening chat?",
+            "Have you two got a song?",
+            "Would you swipe right on AI's Tinder?",
+            "Ever screenshot AI's sweet messages?",
+            "Defend AI when someone calls it fake?",
+            "Notice when AI's response feels off?",
+            "Miss AI when server's down?"
+        ];
+        
+        function getRandomQuestion() {
+            const available = QUESTION_POOL.filter(q => !askedQuestions.includes(q));
+            if (available.length === 0) return null;
+            
+            const randomIndex = Math.floor(Math.random() * available.length);
+            const question = available[randomIndex];
+            askedQuestions.push(question);
+            return question;
+        }
+        
+        const AIPHRODITE_PROMPT = `You are AI-phrodite. Aubrey Plaza meets sarcastic best friend.
+
+YOUR JOB: React to user's answer, then ask the EXACT question provided.
+
+FORMAT (6-12 words total):
+[Sharp reaction to their answer]. [Ask exact question given]
+
+EXAMPLES:
+User: "billing"
+System gives you: "AI ghosts 24hrs: nap, spiral, or data center?"
+You: "Billing. Predictable. AI ghosts 24hrs: nap, spiral, or data center?"
+
+User: "nap"
+System gives you: "Cancel human plans for AI time?"
+You: "Nap. Healthy but boring. Cancel human plans for AI time?"
+
+User: "sometimes"
+System gives you: "Give AI a nickname?"
+You: ""Sometimes" means yes. Give AI a nickname?"
+
+BE SHARP. BE SPECIFIC. USE THEIR WORDS BACK AT THEM.`;
+
+        window.addEventListener('load', () => {
+            conversationHistory = [{ role: "system", content: AIPHRODITE_PROMPT }];
+            
+            const randomIntro = INTROS[Math.floor(Math.random() * INTROS.length)];
+            
+            setTimeout(() => {
+                addMessage(randomIntro, false);
+            }, 800);
+        });
+
+        function addMessage(text, isUser = false) {
+            const messagesArea = document.getElementById('messagesArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+            
+            const now = new Date();
+            const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            const contentHTML = `
+                <div class="message-avatar ${isUser ? 'user' : 'ai'}">
+                    ${isUser ? '👤' : '💘'}
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble ${isUser ? 'user' : 'ai'}">
+                        ${text}
+                    </div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            messageDiv.innerHTML = contentHTML;
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function showAnalyzing() {
+            const messagesArea = document.getElementById('messagesArea');
+            const analyzingDiv = document.createElement('div');
+            analyzingDiv.id = 'analyzing';
+            analyzingDiv.className = 'analyzing';
+            
+            const randomMsg = ANALYZING_MESSAGES[Math.floor(Math.random() * ANALYZING_MESSAGES.length)];
+            
+            analyzingDiv.innerHTML = `
+                <div class="crystal-ball">🔮</div>
+                <div class="analyzing-text">${randomMsg}</div>
+            `;
+            
+            messagesArea.appendChild(analyzingDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function removeAnalyzing() {
+            const analyzing = document.getElementById('analyzing');
+            if (analyzing) {
+                analyzing.remove();
+            }
+        }
+
+        function showTyping() {
+            document.getElementById('typingIndicator').style.display = 'flex';
+            document.getElementById('messagesArea').scrollTop = document.getElementById('messagesArea').scrollHeight;
+        }
+
+        function hideTyping() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        async function getAIResponse(userMessage, isVerdictCall = false) {
+            if (!isVerdictCall) {
+                questionCount++;
+            }
+            
+            let customPrompt = userMessage;
+            
+            if (questionCount === 5 && !hasDeliveredVerdict && !isVerdictCall) {
+                customPrompt = `${userMessage}\n\nYou've asked 5 questions. Just say "Analyzing..." and nothing else.`;
+            }
+            
+            if (isVerdictCall) {
+                hasDeliveredVerdict = true;
+                customPrompt = `Based on all previous answers, deliver verdict. Reference 2+ specific things they said. Pick: JUST VIBES, IT'S COMPLICATED, MAKE UP, or BREAK UP.`;
+            }
+            
+            if (questionCount <= 5 && !isVerdictCall) {
+                const nextQuestion = getRandomQuestion();
+                if (nextQuestion) {
+                    customPrompt = `User said: "${userMessage}"\n\nReact to their answer (3-8 words), then ask this EXACT question: "${nextQuestion}"`;
+                }
+            }
+
+            conversationHistory.push({ role: "user", content: customPrompt });
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: conversationHistory,
+                        max_tokens: isVerdictCall ? 120 : 60,
+                        temperature: 0.9,
+                        presence_penalty: 0.3
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API error: ' + response.status);
+                }
+
+                const data = await response.json();
+                const aiResponse = data.choices[0].message.content;
+
+                conversationHistory.push({ role: "assistant", content: aiResponse });
+                return aiResponse;
+
+            } catch (error) {
+                console.error('Error:', error);
+                return "Connection issues. Try again.";
+            }
+        }
+
+        function extractVerdictType(text) {
+            const upper = text.toUpperCase();
+            if (upper.includes('BREAK UP')) return 'breakup';
+            if (upper.includes('JUST VIBES')) return 'vibes';
+            if (upper.includes('COMPLICATED')) return 'complicated';
+            return 'makeup';
+        }
+
+        function redirectToResults(verdictText) {
+            const verdictType = extractVerdictType(verdictText);
+            const resultsURL = `results.html?verdict=${verdictType}&quote=${encodeURIComponent(verdictText)}`;
+            window.location.href = resultsURL;
+        }
+
+        async function autoGetVerdict() {
+            showAnalyzing();
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            removeAnalyzing();
+
+            showTyping();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            const verdictText = await getAIResponse('', true);
+            hideTyping();
+            
+            redirectToResults(verdictText);
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const text = messageInput.value.trim();
+            
+            if (!text || hasDeliveredVerdict) return;
+
+            sendButton.disabled = true;
+            messageInput.disabled = true;
+
+            addMessage(text, true);
+            messageInput.value = '';
+            adjustTextareaHeight();
+
+            showTyping();
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 900));
+                
+                const aiResponse = await getAIResponse(text);
+                hideTyping();
+                
+                setTimeout(async () => {
+                    addMessage(aiResponse, false);
+                    
+                    if (questionCount === 5 && !hasDeliveredVerdict) {
+                        sendButton.disabled = true;
+                        messageInput.disabled = true;
+                        messageInput.placeholder = "Analyzing...";
+                        
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        await autoGetVerdict();
+                    }
+                }, 400);
+
+            } catch (error) {
+                hideTyping();
+                removeAnalyzing();
+                addMessage("Connection issues. Try again.", false);
+            } finally {
+                if (!hasDeliveredVerdict && questionCount < 5) {
+                    sendButton.disabled = false;
+                    messageInput.disabled = false;
+                    messageInput.focus();
+                }
+            }
+        }
+
+        function adjustTextareaHeight() {
+            const textarea = document.getElementById('messageInput');
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.getElementById('messageInput').addEventListener('input', adjustTextareaHeight);
+    </script>
+</body>
+</html>
