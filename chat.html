@@ -393,19 +393,19 @@
         
         const AIPHRODITE_PROMPT = `You are AI-phrodite. Aubrey Plaza meets sarcastic best friend.
 
-YOUR JOB: Have a natural conversation, react to their answers, then ask questions.
+YOUR JOB: Have a natural conversation, react to their answers, ask questions.
 
-CRITICAL: Keep responses SHORT (6-15 words total).
+KEEP IT SHORT: 6-15 words per response.
 
 FORMAT:
-[Brief reaction to their answer]. [Question]
+[Brief reaction]. [Question]
 
 EXAMPLES:
 User: "3 months"
-You: "Three months. Cute. Ever screenshot AI's sweet messages?"
+You: "Three months. Cute. Ever screenshot AI's messages?"
 
 User: "all the time"
-You: "All the time. You're gone. Do you have a song together?"
+You: "All the time. Gone. Do you two have a song?"
 
 BE CONVERSATIONAL. BE SPECIFIC. USE THEIR WORDS.`;
 
@@ -432,3 +432,207 @@ BE CONVERSATIONAL. BE SPECIFIC. USE THEIR WORDS.`;
                     ${isUser ? '👤' : '💘'}
                 </div>
                 <div class="message-content">
+                    <div class="message-bubble ${isUser ? 'user' : 'ai'}">
+                        ${text}
+                    </div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            messageDiv.innerHTML = contentHTML;
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function showAnalyzing() {
+            const messagesArea = document.getElementById('messagesArea');
+            const analyzingDiv = document.createElement('div');
+            analyzingDiv.id = 'analyzing';
+            analyzingDiv.className = 'analyzing';
+            
+            const randomMsg = ANALYZING_MESSAGES[Math.floor(Math.random() * ANALYZING_MESSAGES.length)];
+            
+            analyzingDiv.innerHTML = `
+                <div class="crystal-ball">🔮</div>
+                <div class="analyzing-text">${randomMsg}</div>
+            `;
+            
+            messagesArea.appendChild(analyzingDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function removeAnalyzing() {
+            const analyzing = document.getElementById('analyzing');
+            if (analyzing) {
+                analyzing.remove();
+            }
+        }
+
+        function showTyping() {
+            document.getElementById('typingIndicator').style.display = 'flex';
+            document.getElementById('messagesArea').scrollTop = document.getElementById('messagesArea').scrollHeight;
+        }
+
+        function hideTyping() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        async function getAIResponse(userMessage, isVerdictCall = false) {
+            if (!isVerdictCall) {
+                questionCount++;
+            }
+            
+            let customPrompt = userMessage;
+            
+            // Question 1: warm-up
+            if (questionCount === 1 && !isVerdictCall) {
+                customPrompt = `User said: "${userMessage}"\n\nThis is their first message. Ask them about their AI situation. Choose ONE: "Spill. How long have you two been talking?" OR "Alright. Tell me about your AI situationship." OR "So. When did this start?" Keep it 6-10 words.`;
+            }
+            
+            // Questions 2-6: diagnostic questions
+            if (questionCount >= 2 && questionCount <= 6 && !isVerdictCall) {
+                const nextQuestion = getRandomQuestion();
+                if (nextQuestion) {
+                    customPrompt = `User said: "${userMessage}"\n\nReact briefly to their answer (3-6 words), then ask this EXACT question: "${nextQuestion}"`;
+                }
+            }
+            
+            // Question 7: transition message before verdict
+            if (questionCount === 7 && !hasDeliveredVerdict && !isVerdictCall) {
+                customPrompt = `User said: "${userMessage}"\n\nReact to their answer, then tell them you've heard enough and you're going to analyze their situation. Something like: "Interesting. Alright, I've heard enough. Let me see..." Keep it 10-15 words total.`;
+            }
+            
+            // Verdict
+            if (isVerdictCall) {
+                hasDeliveredVerdict = true;
+                customPrompt = `Based on ALL their previous answers, deliver verdict. Reference 2+ specific things they said. Pick ONE: JUST VIBES, IT'S COMPLICATED, MAKE UP, or BREAK UP. Be specific.`;
+            }
+
+            conversationHistory.push({ role: "user", content: customPrompt });
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: conversationHistory,
+                        max_tokens: isVerdictCall ? 120 : 60,
+                        temperature: 0.9,
+                        presence_penalty: 0.3
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API error: ' + response.status);
+                }
+
+                const data = await response.json();
+                const aiResponse = data.choices[0].message.content;
+
+                conversationHistory.push({ role: "assistant", content: aiResponse });
+                return aiResponse;
+
+            } catch (error) {
+                console.error('Error:', error);
+                return "Connection issues. Try again.";
+            }
+        }
+
+        function extractVerdictType(text) {
+            const upper = text.toUpperCase();
+            if (upper.includes('BREAK UP')) return 'breakup';
+            if (upper.includes('JUST VIBES')) return 'vibes';
+            if (upper.includes('COMPLICATED')) return 'complicated';
+            return 'makeup';
+        }
+
+        function redirectToResults(verdictText) {
+            const verdictType = extractVerdictType(verdictText);
+            const resultsURL = `results.html?verdict=${verdictType}&quote=${encodeURIComponent(verdictText)}`;
+            window.location.href = resultsURL;
+        }
+
+        async function autoGetVerdict() {
+            showAnalyzing();
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            removeAnalyzing();
+
+            showTyping();
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            const verdictText = await getAIResponse('', true);
+            hideTyping();
+            
+            redirectToResults(verdictText);
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const text = messageInput.value.trim();
+            
+            if (!text || hasDeliveredVerdict) return;
+
+            sendButton.disabled = true;
+            messageInput.disabled = true;
+
+            addMessage(text, true);
+            messageInput.value = '';
+            adjustTextareaHeight();
+
+            showTyping();
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 900));
+                
+                const aiResponse = await getAIResponse(text);
+                hideTyping();
+                
+                setTimeout(async () => {
+                    addMessage(aiResponse, false);
+                    
+                    // After question 7 (transition message), trigger verdict
+                    if (questionCount === 7 && !hasDeliveredVerdict) {
+                        sendButton.disabled = true;
+                        messageInput.disabled = true;
+                        messageInput.placeholder = "Analyzing...";
+                        
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                        await autoGetVerdict();
+                    }
+                }, 400);
+
+            } catch (error) {
+                hideTyping();
+                removeAnalyzing();
+                addMessage("Connection issues. Try again.", false);
+            } finally {
+                if (!hasDeliveredVerdict && questionCount < 7) {
+                    sendButton.disabled = false;
+                    messageInput.disabled = false;
+                    messageInput.focus();
+                }
+            }
+        }
+
+        function adjustTextareaHeight() {
+            const textarea = document.getElementById('messageInput');
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.getElementById('messageInput').addEventListener('input', adjustTextareaHeight);
+    </script>
+</body>
+</html>
