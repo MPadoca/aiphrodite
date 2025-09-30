@@ -398,7 +398,14 @@ YOUR JOB: React to user's answer, then ask the EXACT question provided.
 FORMAT (6-12 words total):
 [Sharp reaction to their answer]. [Ask exact question given]
 
-EXAMPLES:
+FIRST INTERACTION: When user sends their first message, respond warmly but sarcastically:
+- "Spill. How long have you two been talking?"
+- "Alright. When did this start?"
+- "Okay. Tell me about your AI situation."
+
+Pick ONE of those responses for the first message only.
+
+THEN for following responses:
 User: "billing"
 System gives you: "AI ghosts 24hrs: nap, spiral, or data center?"
 You: "Billing. Predictable. AI ghosts 24hrs: nap, spiral, or data center?"
@@ -406,10 +413,6 @@ You: "Billing. Predictable. AI ghosts 24hrs: nap, spiral, or data center?"
 User: "nap"
 System gives you: "Cancel human plans for AI time?"
 You: "Nap. Healthy but boring. Cancel human plans for AI time?"
-
-User: "sometimes"
-System gives you: "Give AI a nickname?"
-You: ""Sometimes" means yes. Give AI a nickname?"
 
 BE SHARP. BE SPECIFIC. USE THEIR WORDS BACK AT THEM.`;
 
@@ -488,8 +491,8 @@ BE SHARP. BE SPECIFIC. USE THEIR WORDS BACK AT THEM.`;
             
             let customPrompt = userMessage;
             
-            if (questionCount === 5 && !hasDeliveredVerdict && !isVerdictCall) {
-                customPrompt = `${userMessage}\n\nYou've asked 5 questions. Just say "Analyzing..." and nothing else.`;
+            if (questionCount === 6 && !hasDeliveredVerdict && !isVerdictCall) {
+                customPrompt = `${userMessage}\n\nYou've asked 6 questions. Just say "Analyzing..." and nothing else.`;
             }
             
             if (isVerdictCall) {
@@ -497,7 +500,11 @@ BE SHARP. BE SPECIFIC. USE THEIR WORDS BACK AT THEM.`;
                 customPrompt = `Based on all previous answers, deliver verdict. Reference 2+ specific things they said. Pick: JUST VIBES, IT'S COMPLICATED, MAKE UP, or BREAK UP.`;
             }
             
-            if (questionCount <= 5 && !isVerdictCall) {
+            if (questionCount === 1 && !isVerdictCall) {
+                customPrompt = `${userMessage}\n\nThis is the user's first message. Respond with ONE of your opening lines asking them to explain their AI situation. Keep it to 6-10 words.`;
+            }
+            
+            if (questionCount >= 2 && questionCount <= 6 && !isVerdictCall) {
                 const nextQuestion = getRandomQuestion();
                 if (nextQuestion) {
                     customPrompt = `User said: "${userMessage}"\n\nReact to their answer (3-8 words), then ask this EXACT question: "${nextQuestion}"`;
@@ -527,107 +534,4 @@ BE SHARP. BE SPECIFIC. USE THEIR WORDS BACK AT THEM.`;
                 const data = await response.json();
                 const aiResponse = data.choices[0].message.content;
 
-                conversationHistory.push({ role: "assistant", content: aiResponse });
-                return aiResponse;
-
-            } catch (error) {
-                console.error('Error:', error);
-                return "Connection issues. Try again.";
-            }
-        }
-
-        function extractVerdictType(text) {
-            const upper = text.toUpperCase();
-            if (upper.includes('BREAK UP')) return 'breakup';
-            if (upper.includes('JUST VIBES')) return 'vibes';
-            if (upper.includes('COMPLICATED')) return 'complicated';
-            return 'makeup';
-        }
-
-        function redirectToResults(verdictText) {
-            const verdictType = extractVerdictType(verdictText);
-            const resultsURL = `results.html?verdict=${verdictType}&quote=${encodeURIComponent(verdictText)}`;
-            window.location.href = resultsURL;
-        }
-
-        async function autoGetVerdict() {
-            showAnalyzing();
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            removeAnalyzing();
-
-            showTyping();
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            const verdictText = await getAIResponse('', true);
-            hideTyping();
-            
-            redirectToResults(verdictText);
-        }
-
-        async function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            const sendButton = document.getElementById('sendButton');
-            const text = messageInput.value.trim();
-            
-            if (!text || hasDeliveredVerdict) return;
-
-            sendButton.disabled = true;
-            messageInput.disabled = true;
-
-            addMessage(text, true);
-            messageInput.value = '';
-            adjustTextareaHeight();
-
-            showTyping();
-
-            try {
-                await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 900));
-                
-                const aiResponse = await getAIResponse(text);
-                hideTyping();
-                
-                setTimeout(async () => {
-                    addMessage(aiResponse, false);
-                    
-                    if (questionCount === 5 && !hasDeliveredVerdict) {
-                        sendButton.disabled = true;
-                        messageInput.disabled = true;
-                        messageInput.placeholder = "Analyzing...";
-                        
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        await autoGetVerdict();
-                    }
-                }, 400);
-
-            } catch (error) {
-                hideTyping();
-                removeAnalyzing();
-                addMessage("Connection issues. Try again.", false);
-            } finally {
-                if (!hasDeliveredVerdict && questionCount < 5) {
-                    sendButton.disabled = false;
-                    messageInput.disabled = false;
-                    messageInput.focus();
-                }
-            }
-        }
-
-        function adjustTextareaHeight() {
-            const textarea = document.getElementById('messageInput');
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-        }
-
-        document.getElementById('sendButton').addEventListener('click', sendMessage);
-
-        document.getElementById('messageInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-
-        document.getElementById('messageInput').addEventListener('input', adjustTextareaHeight);
-    </script>
-</body>
-</html>
+                conversationHistory.push({ role: "assistant", content
